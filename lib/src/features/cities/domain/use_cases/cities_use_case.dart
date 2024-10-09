@@ -6,7 +6,7 @@ class CitiesUseCase {
 
   CitiesUseCase({required this.citiesRepository});
 
-  Future<List<CityModel>> getCities({String? search}) {
-    return citiesRepository.getCities(search: search);
+  Future<List<CityModel>> getCities({String? search}) async {
+    return await citiesRepository.getCities(search: search);
   }
 }

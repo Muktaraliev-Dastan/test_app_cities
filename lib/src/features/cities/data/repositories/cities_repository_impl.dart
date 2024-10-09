@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_app_cities/src/features/cities/data/model/city_model.dart';
@@ -9,8 +11,10 @@ class CitiesRepositoryImpl implements CitiesRepository {
   final ApiRequester apiRequester;
   final SharedPreferences sharedPreferences;
 
-  CitiesRepositoryImpl(
-      {required this.apiRequester, required this.sharedPreferences});
+  CitiesRepositoryImpl({
+    required this.apiRequester,
+    required this.sharedPreferences,
+  });
 
   @override
   Future<List<CityModel>> getCities({String? search}) async {
@@ -25,19 +29,17 @@ class CitiesRepositoryImpl implements CitiesRepository {
             .toList();
 
         // Сохраняем данные в shared_preferences
-        await sharedPreferences.setString('cities', response.data.toString());
+        await sharedPreferences.setString('cities', jsonEncode(response.data));
 
         return cities;
       }
-      throw response;
+      throw Exception('Не удалось загрузить города.');
     } catch (error) {
-      print(error);
       // Получаем данные из кэша, если запрос не удался
       final cachedData = sharedPreferences.getString('cities');
       if (cachedData != null) {
-        return (cachedData as List)
-            .map((city) => CityModel.fromJson(city))
-            .toList();
+        final List<dynamic> jsonData = jsonDecode(cachedData);
+        return jsonData.map((city) => CityModel.fromJson(city)).toList();
       }
       throw CatchException.convertException(error);
     }
